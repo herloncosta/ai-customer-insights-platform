@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import { validate } from './middlewares/validate';
 import { createFeedbackSchema, listFeedbacksQuerySchema } from './schemas/feedback.schema';
+import { logger } from './lib/logger';
 
 const app = express();
 const PORT = Number(process.env.PORT ?? 3001);
@@ -41,6 +42,5 @@ app.get('/api/v1/feedbacks/metrics', (_req, res) => {
 });
 
 app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
-  console.log(`[backend] listening on :${PORT}`);
+  logger.info({ port: PORT }, 'backend listening');
 });
