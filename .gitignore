@@ -8,11 +8,13 @@ backend/dist/
 worker/dist/
 frontend/dist/
 
-# Prisma
-backend/prisma/migrations/
+# Prisma (migrations DEVEM ser versionadas — D-10; apenas o client gerado é ignorado)
+backend/prisma/generated/
+backend/prisma/generated/
 
 # Logs / OS
 *.log
+logs/
 .DS_Store
 Thumbs.db
 

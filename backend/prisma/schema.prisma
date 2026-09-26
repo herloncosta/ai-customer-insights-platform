@@ -1,11 +1,11 @@
 // prisma/schema.prisma — referência §3 do AGENTS.md
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "./generated/prisma"
 }
 
 enum Status {
