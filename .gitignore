@@ -1,0 +1,19 @@
+# Secrets / env (RNF-05: sem API keys no repo)
+.env
+*.local
+
+# Deps / build
+node_modules/
+backend/dist/
+worker/dist/
+frontend/dist/
+
+# Prisma
+backend/prisma/migrations/
+
+# Logs / OS
+*.log
+.DS_Store
+Thumbs.db
+
+# Docker volumes já nomeados no compose (não versionar dados locais)
