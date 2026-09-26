@@ -62,11 +62,11 @@ O sistema é composto por 3 serviços/camadas desacopladas executadas via Docker
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "./generated/prisma"
 }
 
 enum Status {
@@ -121,6 +121,23 @@ model Analysis {
 }
 
 ```
+// ⚠️ Prisma 7: `url` foi removido do bloco `datasource` e o generator
+// `prisma-client-js` foi substituído por `prisma-client` (com `output`
+// obrigatório). A URL de conexão do CLI vive em `backend/prisma.config.ts`:
+```ts
+// backend/prisma.config.ts
+import 'dotenv/config';
+import { defineConfig, env } from 'prisma/config';
+
+export default defineConfig({
+  schema: 'prisma/schema.prisma',
+  migrations: { path: 'prisma/migrations' },
+  datasource: { url: env('DATABASE_URL') },
+});
+```
+// Runtime (quando houver código que instancia o client): `new PrismaClient()`
+// puro lança erro no v7 — usar driver adapter `@prisma/adapter-mariadb`:
+// `new PrismaClient({ adapter })`. Ver §6 (D-01).
 
 ---
 
@@ -216,3 +233,20 @@ const jsonSchema = {
   required: ["sentiment", "urgency", "category", "summary", "tags"],
 };
 ```
+
+---
+
+## 6. Decisões de Implementação (log — ler antes de codar)
+
+- **D-01 (Prisma 7):** repo usa `prisma` + `@prisma/client` v7 (`prisma-client`, `prisma.config.ts`, sem `url` no schema). Runtime exige `@prisma/adapter-mariadb` (`new PrismaClient({ adapter })`). Migração v5→v6→v7 registrada nos commits; não reverter para `prisma-client-js`.
+- **D-02 (Métricas):** `GET /api/v1/feedbacks/metrics` inclui `topTags: [{tag, count}]` (RF-05 exige; exemplo do §4.3 estava incompleto).
+- **D-03 (Rotas):** base canônica `/api/v1` (RNF-01 citava `/api` sem versão — desconsiderar).
+- **D-04 (Leitura unitária):** implementar `GET /api/v1/feedbacks/:id` (UUID, RF-01) mesmo sem contrato detalhado no §4.
+- **D-05 (DLQ):** `feedback_processing_queue.dlq` via `x-dead-letter-exchange=""` + `x-dead-letter-routing-key` (RF-04).
+- **D-06 (Filtros do GET lista):** `page, limit, status, sentiment, urgency, category` (Zod com coerce + defaults `page=1, limit=10, max 100`).
+- **D-07 (Logs):** `pino` com 2 transports — `pino-pretty` no terminal e JSON em `<raiz-do-serviço>/logs/app.log`; nível via `LOG_LEVEL`, segredos com `redact`. Zero `console.*` nos entrypoints.
+- **D-08 (CWD e env):** rodar `npm/npx/prisma` sempre na pasta do serviço (`backend/`, `worker/`, `frontend/`) — a raiz não tem `package.json` e o `npx` baixa o Prisma 8 RC errado. Pré-requisito local: `cp .env.example .env` (raiz e `backend/`); arquivos `.env` nunca commitados.
+- **D-09 (Docker):** `RUN npx prisma generate` exige `DATABASE_URL` resolvível no v7 → `backend/Dockerfile` usa `ARG` dummy (runtime usa a var do compose; `.env` está no `.dockerignore`).
+- **D-10 (Git):** repo `herloncosta/ai-customer-insights-platform` (público); fluxo `main` (estável) + `develop` (integração); conventional commits (`feat/fix/chore` + escopo). Migrations do Prisma **devem** ser versionadas (nunca gitignored).
+- **D-11 (Validação):** Zod `.strict()` nos inputs (anti mass-assignment); `email` normalizado para minúsculas; `content` 10–5000 chars.
+- **D-12 (Estado em PROGRESS.md):** o que está pronto vs. pendente vive em `PROGRESS.md` (documento vivo) — atualizar a cada entrega.
