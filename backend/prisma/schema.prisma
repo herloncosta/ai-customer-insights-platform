@@ -1,0 +1,60 @@
+// prisma/schema.prisma — referência §3 do AGENTS.md
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Status {
+  PENDING
+  PROCESSING
+  PROCESSED
+  FAILED
+}
+
+enum Sentiment {
+  POSITIVE
+  NEGATIVE
+  NEUTRAL
+}
+
+enum Urgency {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum Category {
+  BUG
+  FEATURE_REQUEST
+  BILLING
+  USABILITY
+  OTHER
+}
+
+model Feedback {
+  id           String    @id @default(uuid())
+  customerName String
+  email        String
+  content      String    @db.Text
+  status       Status    @default(PENDING)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  analysis     Analysis?
+}
+
+model Analysis {
+  id         String    @id @default(uuid())
+  feedbackId String    @unique
+  feedback   Feedback  @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  sentiment  Sentiment
+  urgency    Urgency
+  category   Category
+  summary    String    @db.VarChar(255)
+  tags       Json
+  createdAt  DateTime  @default(now())
+}
