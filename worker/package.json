@@ -11,15 +11,15 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.3",
     "amqplib": "^0.10.4",
     "dotenv": "^16.4.5",
-    "openai": "^4.56.0",
-    "@prisma/client": "^5.18.0"
+    "openai": "^4.56.0"
   },
   "devDependencies": {
     "@types/amqplib": "^0.10.5",
     "@types/node": "^20.12.12",
-    "prisma": "^5.18.0",
+    "prisma": "^6.19.3",
     "tsx": "^4.16.2",
     "typescript": "^5.5.4",
     "vitest": "^2.1.1"
