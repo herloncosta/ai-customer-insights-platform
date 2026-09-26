@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import { validate } from './middlewares/validate';
+import { createFeedbackSchema, listFeedbacksQuerySchema } from './schemas/feedback.schema';
 
 const app = express();
 const PORT = Number(process.env.PORT ?? 3001);
@@ -15,7 +17,7 @@ app.get('/health', (_req, res) => {
 });
 
 // Placeholder RF-01 / RF-02 — implementação real entra na próxima etapa
-app.post('/api/v1/feedbacks', (_req, res) => {
+app.post('/api/v1/feedbacks', validate(createFeedbackSchema, 'body'), (_req, res) => {
   // TODO: validar com Zod, salvar PENDING no MySQL, publicar em feedback_processing_queue
   res.status(202).json({
     id: 'pending-implementation',
@@ -24,7 +26,7 @@ app.post('/api/v1/feedbacks', (_req, res) => {
   });
 });
 
-app.get('/api/v1/feedbacks', (_req, res) => {
+app.get('/api/v1/feedbacks', validate(listFeedbacksQuerySchema, 'query'), (_req, res) => {
   // TODO: paginação + filtros (status, sentiment, urgency) + include analysis
   res.status(200).json({ data: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } });
 });
