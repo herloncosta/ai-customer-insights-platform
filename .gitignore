@@ -10,6 +10,7 @@ frontend/dist/
 
 # Prisma (migrations DEVEM ser versionadas — D-10; apenas o client gerado é ignorado)
 backend/src/generated/
+worker/src/generated/
 
 # Logs / OS
 *.log
