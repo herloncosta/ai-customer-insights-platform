@@ -34,6 +34,7 @@
 2. ~~`POST /api/v1/feedbacks` real~~ ✅ feito: salva `PENDING` → publica na fila → 202 (RF-01/RF-02); boot pré-aquece pool DB + AMQP (`initQueue`, RNF-01: ~90ms quente no sandbox, frio ~220ms)
 3. ~~`GET` lista + `GET /:id` + `GET /metrics`~~ ✅ feito: lista com `page/limit/status/sentiment/urgency/category` + `include analysis` (mais recentes primeiro), `/:id` com 404/400, `metrics` com `total/bySentiment/byUrgency/topTags[10]`; serialização Date→ISO + Json→string[] (`toFeedbackDto`)
 4. ~~Worker: OpenAI + transições + DLQ~~ ✅ feito: `worker/src/lib/analyzer.ts` (`gpt-4o-mini` structured output strict §5 + retry 3× backoff 1s/2s em 429/5xx/rede + `normalizeAnalysis` com teto 20 palavras) + consumer com `PROCESSING → (Analysis + PROCESSED) | FAILED`, idempotência via ack-skip + `upsert`, DLQ (RF-03/RF-04, RNF-03); `worker/Dockerfile` com generate (D-09); 4 testes vitest
+- [x] **Worker em módulos:** `src/rabbitmq.ts` (conexão/retry + topologia/DLQ) + `src/feedback.processor.ts` (`processFeedback`, `markFailed`, idempotência) + `src/index.ts` só bootstrap; smoke e2e pós-split OK
 - [x] **E2e real com OpenRouter:** `OPENAI_BASE_URL` no analyzer + compose + `.env.examples`; pipeline POST → `PROCESSED` com análise real (`NEGATIVE/HIGH/BUG`, resumo PT-BR) + redelivery sem duplicar + DLQ; `ANALYZER_PROVIDER=mock` segue para e2e sem cota
 5. Frontend (RF-06): form, tabela com filtros, modal de análise, dashboard de métricas
 6. Testes de integração + cobertura ≥80% (RNF-04); criar configs ESLint/Prettier (o script `lint` existe, os arquivos de config ainda não)

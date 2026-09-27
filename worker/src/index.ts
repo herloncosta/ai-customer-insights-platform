@@ -1,54 +1,7 @@
 import 'dotenv/config';
-import amqp from 'amqplib';
 import { logger } from './lib/logger';
-import { prisma } from '@insights/db';
-import { analyzeFeedback } from './lib/analyzer';
-
-const RABBITMQ_URL = process.env.RABBITMQ_URL ?? 'amqp://guest:guest@rabbitmq:5672';
-const QUEUE = process.env.FEEDBACK_QUEUE ?? 'feedback_processing_queue';
-const DLQ = process.env.FEEDBACK_DLQ ?? 'feedback_processing_queue.dlq';
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-async function connectWithRetry(url: string, attempts = 10): Promise<amqp.ChannelModel> {
-  let lastError: unknown;
-  for (let i = 1; i <= attempts; i++) {
-    try {
-      return await amqp.connect(url);
-    } catch (err) {
-      lastError = err;
-      logger.warn({ err, attempt: i, attempts }, 'rabbitmq connection failed, retrying');
-      await sleep(3000);
-    }
-  }
-  throw lastError;
-}
-
-// RF-03/RF-04: PROCESSING → IA → (Analysis + PROCESSED) | FAILED.
-// Idempotente (RNF-03): redelivery de um já PROCESSADO só dá ack.
-async function processFeedback(feedbackId: string): Promise<void> {
-  const existing = await prisma.feedback.findUnique({
-    where: { id: feedbackId },
-    include: { analysis: true },
-  });
-  if (!existing) throw new Error(`feedback ${feedbackId} não encontrado`);
-  if (existing.status === 'PROCESSED' && existing.analysis) {
-    logger.info({ feedbackId }, 'já processado — ack sem duplicar');
-    return;
-  }
-
-  await prisma.feedback.update({ where: { id: feedbackId }, data: { status: 'PROCESSING' } });
-  const result = await analyzeFeedback(existing.content);
-  await prisma.$transaction([
-    prisma.analysis.upsert({
-      where: { feedbackId },
-      create: { feedbackId, ...result },
-      update: { ...result },
-    }),
-    prisma.feedback.update({ where: { id: feedbackId }, data: { status: 'PROCESSED' } }),
-  ]);
-  logger.info({ feedbackId, ...result }, 'feedback processado');
-}
+import { DLQ, QUEUE, RABBITMQ_URL, connectWithRetry, declareTopology } from './rabbitmq';
+import { markFailed, processFeedback } from './feedback.processor';
 
 async function main(): Promise<void> {
   // Fail fast: sem chave não há como cumprir RF-03 — melhor nem consumir.
@@ -58,14 +11,7 @@ async function main(): Promise<void> {
 
   const conn = await connectWithRetry(RABBITMQ_URL);
   const ch = await conn.createChannel();
-
-  // Fila principal + DLQ (RF-04, D-05). DLQ declarada aqui para bootstrap local.
-  await ch.assertQueue(DLQ, { durable: true });
-  await ch.assertQueue(QUEUE, {
-    durable: true,
-    arguments: { 'x-dead-letter-exchange': '', 'x-dead-letter-routing-key': DLQ },
-  });
-  await ch.prefetch(1);
+  await declareTopology(ch);
 
   logger.info({ queue: QUEUE, dlq: DLQ }, 'waiting for messages');
 
@@ -81,11 +27,7 @@ async function main(): Promise<void> {
         ch.ack(msg);
       } catch (err) {
         logger.error({ err, feedbackId }, 'processing failed, sending to DLQ');
-        if (feedbackId) {
-          await prisma.feedback
-            .update({ where: { id: feedbackId }, data: { status: 'FAILED' } })
-            .catch((dbErr) => logger.warn({ dbErr }, 'não foi possível marcar FAILED'));
-        }
+        if (feedbackId) await markFailed(feedbackId);
         ch.nack(msg, false, false); // false = não requeue -> cai na DLQ via x-dead-letter
       }
     },
