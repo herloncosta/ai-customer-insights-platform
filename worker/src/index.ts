@@ -4,7 +4,6 @@ import { DLQ, QUEUE, RABBITMQ_URL, connectWithRetry, declareTopology } from './r
 import { markFailed, processFeedback } from './feedback.processor';
 
 async function main(): Promise<void> {
-  // Fail fast: sem chave não há como cumprir RF-03 — melhor nem consumir.
   if ((process.env.ANALYZER_PROVIDER ?? 'openai') === 'openai' && !process.env.OPENAI_API_KEY) {
     throw new Error('OPENAI_API_KEY não definida (ou use ANALYZER_PROVIDER=mock localmente)');
   }
@@ -28,7 +27,7 @@ async function main(): Promise<void> {
       } catch (err) {
         logger.error({ err, feedbackId }, 'processing failed, sending to DLQ');
         if (feedbackId) await markFailed(feedbackId);
-        ch.nack(msg, false, false); // false = não requeue -> cai na DLQ via x-dead-letter
+        ch.nack(msg, false, false); // sem requeue: cai na DLQ
       }
     },
     { noAck: false },

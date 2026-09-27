@@ -21,7 +21,7 @@ export async function connectWithRetry(url: string, attempts = 10): Promise<amqp
   throw lastError;
 }
 
-// Fila principal + DLQ (RF-04, D-05). DLQ declarada aqui para bootstrap local.
+// DLQ declarada no consumer para bootstrap local.
 export async function declareTopology(ch: amqp.Channel): Promise<void> {
   await ch.assertQueue(DLQ, { durable: true });
   await ch.assertQueue(QUEUE, {

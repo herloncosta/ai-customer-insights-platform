@@ -2,8 +2,7 @@ import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 import { PrismaClient } from './generated/prisma/client';
 import type { Analysis, Feedback } from './generated/prisma/client';
 
-// Fonte única de DB do monorepo (backend + worker importam daqui).
-// Cada serviço roda em processo próprio, então cada um tem seu singleton.
+// Backend e worker importam o singleton daqui — o schema tem fonte única, sem drift.
 
 function mustGetEnv(name: string): string {
   const value = process.env[name];

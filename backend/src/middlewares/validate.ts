@@ -3,10 +3,6 @@ import { z } from 'zod';
 
 type RequestSource = 'body' | 'query' | 'params';
 
-/**
- * Middleware genérico de validação (RNF-05).
- * Substitui req[source] pelo payload parseado e responde 400 em caso de erro.
- */
 export function validate<T extends z.ZodTypeAny>(schema: T, source: RequestSource = 'body') {
   return (req: Request, res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req[source]);

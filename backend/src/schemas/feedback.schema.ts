@@ -1,8 +1,6 @@
 import { z } from 'zod';
 
-// ---------------------------------------------------------------------------
-// Enums — espelham 1:1 os enums do prisma/schema.prisma (§3 AGENTS.md)
-// ---------------------------------------------------------------------------
+// Espelham 1:1 os enums do prisma — mudar aqui exige mudar lá.
 
 export const statusSchema = z.enum(['PENDING', 'PROCESSING', 'PROCESSED', 'FAILED']);
 
@@ -17,11 +15,6 @@ export const categorySchema = z.enum([
   'USABILITY',
   'OTHER',
 ]);
-
-// ---------------------------------------------------------------------------
-// Entrada — POST /api/v1/feedbacks (§4.1 + RNF-05 validação estrita)
-// .strict() rejeita chaves desconhecidas (proteção contra mass assignment).
-// ---------------------------------------------------------------------------
 
 export const createFeedbackSchema = z
   .object({
@@ -42,14 +35,9 @@ export const createFeedbackSchema = z
       .min(10, 'content deve ter ao menos 10 caracteres')
       .max(5000, 'content deve ter no máximo 5000 caracteres'),
   })
-  .strict();
+  .strict(); // rejeita chaves extras (mass assignment)
 
 export type CreateFeedbackInput = z.infer<typeof createFeedbackSchema>;
-
-// ---------------------------------------------------------------------------
-// Entrada — GET /api/v1/feedbacks (§4.2 + RF-06 filtros)
-// Query strings chegam como string: z.coerce converte page/limit.
-// ---------------------------------------------------------------------------
 
 export const listFeedbacksQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -62,19 +50,11 @@ export const listFeedbacksQuerySchema = z.object({
 
 export type ListFeedbacksQuery = z.infer<typeof listFeedbacksQuerySchema>;
 
-// ---------------------------------------------------------------------------
-// Entrada — GET /api/v1/feedbacks/:id (RF-01 leitura)
-// ---------------------------------------------------------------------------
-
 export const feedbackIdParamSchema = z.object({
   id: z.string().uuid('id deve ser um UUID válido'),
 });
 
 export type FeedbackIdParam = z.infer<typeof feedbackIdParamSchema>;
-
-// ---------------------------------------------------------------------------
-// Saída — objetos de domínio (contratos §4.2)
-// ---------------------------------------------------------------------------
 
 export const analysisSchema = z.object({
   sentiment: sentimentSchema,
@@ -98,10 +78,6 @@ export const feedbackSchema = z.object({
 
 export type FeedbackDto = z.infer<typeof feedbackSchema>;
 
-// ---------------------------------------------------------------------------
-// Saída — POST /api/v1/feedbacks → 202 Accepted (§4.1)
-// ---------------------------------------------------------------------------
-
 export const createFeedbackResponseSchema = z.object({
   id: z.string().uuid(),
   status: z.literal('PENDING'),
@@ -109,10 +85,6 @@ export const createFeedbackResponseSchema = z.object({
 });
 
 export type CreateFeedbackResponse = z.infer<typeof createFeedbackResponseSchema>;
-
-// ---------------------------------------------------------------------------
-// Saída — GET /api/v1/feedbacks → 200 paginado (§4.2)
-// ---------------------------------------------------------------------------
 
 export const paginationSchema = z.object({
   page: z.number().int().min(1),
@@ -128,12 +100,7 @@ export const paginatedFeedbacksSchema = z.object({
 
 export type PaginatedFeedbacks = z.infer<typeof paginatedFeedbacksSchema>;
 
-// ---------------------------------------------------------------------------
-// Saída — GET /api/v1/feedbacks/metrics → 200 (RF-05)
-// Inclui topTags (tags mais frequentes), exigido pelo RF-05 embora o exemplo
-// do §4.3 mostre apenas total/bySentiment/byUrgency.
-// ---------------------------------------------------------------------------
-
+// topTags exigido pelo RF-05, embora o exemplo do §4.3 mostre só total/bySentiment/byUrgency.
 export const metricsSchema = z.object({
   total: z.number().int().min(0),
   bySentiment: z.object({
