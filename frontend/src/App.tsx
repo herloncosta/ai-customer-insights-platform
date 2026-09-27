@@ -67,7 +67,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
-      <div className="mx-auto flex max-w-7xl">
+      <div className="flex">
         <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-gray-200 bg-white px-4 py-5 md:flex dark:border-gray-800 dark:bg-gray-900">
           <div className="mb-6 flex items-center gap-2.5 px-1">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">
