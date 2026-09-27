@@ -30,7 +30,7 @@
 ### ⏳ Pendente (ordem sugerida)
 
 1. ~~`prisma migrate dev` inicial + camada DB~~ ✅ feito (F1 acima)
-2. `POST /api/v1/feedbacks` real: Zod → salva `PENDING` → publica na fila (SLA <100ms, RF-02/RNF-01)
+2. ~~`POST /api/v1/feedbacks` real~~ ✅ feito: salva `PENDING` → publica na fila → 202 (RF-01/RF-02); boot pré-aquece pool DB + AMQP (`initQueue`, RNF-01: ~90ms quente no sandbox, frio ~220ms)
 3. `GET` lista real (paginação + filtros D-06, include `analysis`) + `GET /:id` (D-04) + `GET /metrics` real (D-02)
 4. Worker: OpenAI `gpt-4o-mini` structured output (§5) + transições `PROCESSING → PROCESSED/FAILED` + DLQ (RF-03/RF-04, retry backoff RNF-03)
 5. Frontend (RF-06): form, tabela com filtros, modal de análise, dashboard de métricas

@@ -8,9 +8,8 @@ const DLQ = process.env.FEEDBACK_DLQ ?? 'feedback_processing_queue.dlq';
 let conn: ChannelModel | null = null;
 let channel: Channel | null = null;
 
-// Singleton preguiçoso: conecta uma vez, garante fila + DLQ (mesmos args do worker, D-05)
-// e publica mensagens persistentes. RNF-01: publish é fire-and-forget (<100ms).
-export async function publishFeedback(feedbackId: string): Promise<void> {
+// Singleton preguiçoso: conecta uma vez, garante fila + DLQ (mesmos args do worker, D-05).
+async function ensureChannel(): Promise<Channel> {
   if (!channel) {
     conn = await amqp.connect(RABBITMQ_URL);
     channel = await conn.createChannel();
@@ -29,6 +28,18 @@ export async function publishFeedback(feedbackId: string): Promise<void> {
       conn = null;
     });
   }
-  channel.sendToQueue(QUEUE, Buffer.from(JSON.stringify({ feedbackId })), { persistent: true });
+  return channel;
+}
+
+// Pré-aquece a conexão no boot para não cobrar o handshake da primeira requisição (RNF-01).
+export async function initQueue(): Promise<void> {
+  await ensureChannel();
+  logger.info('rabbitmq conectado');
+}
+
+// Publica mensagens persistentes. RNF-01: publish é fire-and-forget (<100ms, sem aguardar IA).
+export async function publishFeedback(feedbackId: string): Promise<void> {
+  const ch = await ensureChannel();
+  ch.sendToQueue(QUEUE, Buffer.from(JSON.stringify({ feedbackId })), { persistent: true });
   logger.info({ feedbackId }, 'feedback publicado na fila');
 }
