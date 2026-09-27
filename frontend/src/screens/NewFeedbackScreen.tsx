@@ -6,7 +6,7 @@ export default function NewFeedbackScreen({
   onCreated: () => void;
 }) {
   return (
-    <div className="mx-auto w-full max-w-xl">
+    <div className="w-full">
       <FeedbackForm onCreated={onCreated} />
     </div>
   );
