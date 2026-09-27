@@ -25,10 +25,11 @@
 - [x] Logger `pino` no backend e worker (`src/lib/logger.ts`): terminal pretty + `<root>/logs/app.log`, `LOG_LEVEL`, `redact`
 - [x] Worker scaffold: consumer com retry, fila + DLQ declaradas, tipos `amqplib` corrigidos (`ChannelModel`)
 - [x] Upgrades Prisma v5 → v6 → v7 (commits `06f2d6b`, `e1e1da6`)
+- [x] **F1 — camada DB backend:** `@prisma/adapter-mariadb` + `src/lib/prisma.ts` (adapter obrigatório v7) + `src/lib/queue.ts` (singleton publish persistente, mesmos args DLQ D-05) + `migrate dev --name init` aplicada (`prisma/migrations/20260927114545_init/`); `generator output` movido para `../src/generated/prisma` (exigência do `rootDir: src` do tsc — importar de `prisma/generated` quebra o build); smoke test OK (insert PENDING + publish + delete, fila purgada); `npm run build` + 9 testes vitest verdes
 
 ### ⏳ Pendente (ordem sugerida)
 
-1. `prisma migrate dev` inicial + camada DB do backend (`src/lib/prisma.ts` com `@prisma/adapter-mariadb` — obrigatório no v7, ver D-01)
+1. ~~`prisma migrate dev` inicial + camada DB~~ ✅ feito (F1 acima)
 2. `POST /api/v1/feedbacks` real: Zod → salva `PENDING` → publica na fila (SLA <100ms, RF-02/RNF-01)
 3. `GET` lista real (paginação + filtros D-06, include `analysis`) + `GET /:id` (D-04) + `GET /metrics` real (D-02)
 4. Worker: OpenAI `gpt-4o-mini` structured output (§5) + transições `PROCESSING → PROCESSED/FAILED` + DLQ (RF-03/RF-04, retry backoff RNF-03)
@@ -66,3 +67,7 @@ npm run dev | npm run build
 - `new PrismaClient()` sem adapter lança erro no v7 (D-01)
 - Após criar/editar `.env`, recarregar a janela do VS Code (Prisma Language Server)
 - Migrations **devem** ser commitadas (D-10)
+- `generator output` vive em `backend/src/generated/prisma` (não em `prisma/generated`): `rootDir: src` do tsc proíbe importar de fora de `src/`; `.gitignore` cobre `backend/src/generated/`
+- `import { PrismaClient } from '@prisma/client'` **não funciona** no v7 (módulo `.prisma/client/default` ausente) — importar de `../generated/prisma/client`
+- `PrismaMariaDb` aceita connection string direta: `new PrismaMariaDb(DATABASE_URL)`
+- `insights_user` precisa de `GRANT ALL PRIVILEGES ON *.*` (shadow DB do `migrate dev`, erro P3014) — comando: `docker exec insights-mysql mysql -u root -p$MYSQL_ROOT_PASSWORD -e "GRANT ALL PRIVILEGES ON *.* TO 'insights_user'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"`
