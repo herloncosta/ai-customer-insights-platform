@@ -1,9 +1,13 @@
 import path from 'node:path';
+import dotenv from 'dotenv';
 import { defineConfig } from 'vitest/config';
 
-// Força o banco de teste — nunca rodar integração contra o banco de dev.
-process.env.DATABASE_URL ??=
-  'mysql://insights_user:insightspass123@localhost:3306/insights_db_test';
+// Credenciais locais (senhas rotacionadas, nunca commitadas) — o banco é FORÇADO
+// para teste (derivado da URL local, trocando só o database), nunca o de dev.
+dotenv.config({ path: path.join(__dirname, '.env') });
+const baseUrl =
+  process.env.DATABASE_URL ?? 'mysql://insights_user:insightspass123@localhost:3306/insights_db';
+process.env.DATABASE_URL = baseUrl.replace(/\/[^/?]*(\?|$)/, '/insights_db_test$1');
 
 export default defineConfig({
   resolve: { alias: { '@insights/db': path.resolve(__dirname, '../shared/src/index.ts') } },

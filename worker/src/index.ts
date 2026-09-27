@@ -26,9 +26,7 @@ export async function dispatch(channel: AckChannel, msg: amqp.ConsumeMessage | n
 }
 
 async function main(): Promise<void> {
-  if ((process.env.ANALYZER_PROVIDER ?? 'openai') === 'openai' && !process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY não definida (ou use ANALYZER_PROVIDER=mock localmente)');
-  }
+  assertAnalyzerConfigured();
 
   const conn = await connectWithRetry(RABBITMQ_URL);
   const ch = await conn.createChannel();
@@ -37,6 +35,13 @@ async function main(): Promise<void> {
   logger.info({ queue: QUEUE, dlq: DLQ }, 'waiting for messages');
 
   await ch.consume(QUEUE, (msg) => void dispatch(ch, msg), { noAck: false });
+}
+
+// Fail fast: sem chave não há como cumprir a classificação — melhor nem consumir.
+export function assertAnalyzerConfigured(): void {
+  if ((process.env.ANALYZER_PROVIDER ?? 'openai') === 'openai' && !process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY não definida (ou use ANALYZER_PROVIDER=mock localmente)');
+  }
 }
 
 main().catch((err) => {

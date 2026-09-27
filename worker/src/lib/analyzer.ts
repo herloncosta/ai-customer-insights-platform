@@ -92,8 +92,7 @@ export async function analyzeFeedback(content: string): Promise<AnalysisResult> 
   });
   const model = process.env.OPENAI_MODEL ?? 'gpt-4o-mini';
 
-  let lastError: unknown;
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+  for (let attempt = 1; ; attempt++) {
     try {
       const res = await client.chat.completions.create({
         model,
@@ -107,12 +106,10 @@ export async function analyzeFeedback(content: string): Promise<AnalysisResult> 
       const parsed = JSON.parse(res.choices[0]?.message?.content ?? '{}');
       return normalizeAnalysis(parsed);
     } catch (err) {
-      lastError = err;
-      if (!isRetryable(err) || attempt === MAX_ATTEMPTS) throw err;
+      if (!isRetryable(err) || attempt >= MAX_ATTEMPTS) throw err;
       const backoff = 1000 * 2 ** (attempt - 1);
       logger.warn({ attempt, backoff, err }, 'openai falhou (transitório), retentando');
       await sleep(backoff);
     }
   }
-  throw lastError;
 }

@@ -14,6 +14,10 @@ export async function create(req: Request, res: Response): Promise<void> {
       message: 'Feedback recebido e enviado para análise.',
     });
   } catch (err) {
+    if (err instanceof service.QuotaExceededError) {
+      res.status(429).json({ error: err.message });
+      return;
+    }
     logger.error({ err }, 'falha ao criar feedback');
     res.status(500).json({ error: 'Erro interno ao processar feedback.' });
   }

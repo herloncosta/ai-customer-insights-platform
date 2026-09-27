@@ -2,7 +2,21 @@ import { prisma, type Feedback, type FeedbackWithAnalysis } from '@insights/db';
 import { publishFeedback } from '../lib/queue';
 import type { CreateFeedbackInput, ListFeedbacksQuery } from '../schemas/feedback.schema';
 
+export class QuotaExceededError extends Error {
+  readonly status = 429;
+  constructor() {
+    super('Cota diária de análises atingida — tente novamente amanhã.');
+  }
+}
+
 export async function createFeedback(input: CreateFeedbackInput): Promise<Feedback> {
+  // Trava anti-estouro da cota diária do provedor de IA (POC): sem ela, o excesso
+  // bloqueia o acesso e derruba a demo para todos.
+  const limit = Number(process.env.DAILY_ANALYSIS_LIMIT ?? 100);
+  const dayStart = new Date();
+  dayStart.setUTCHours(0, 0, 0, 0);
+  const used = await prisma.feedback.count({ where: { createdAt: { gte: dayStart } } });
+  if (used >= limit) throw new QuotaExceededError();
   const feedback = await prisma.feedback.create({ data: input });
   await publishFeedback(feedback.id);
   return feedback;

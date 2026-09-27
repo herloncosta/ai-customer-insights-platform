@@ -60,6 +60,7 @@ services:
       RABBITMQ_URL: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASSWORD:-guest}@rabbitmq:5672
       FEEDBACK_QUEUE: ${FEEDBACK_QUEUE:-feedback_processing_queue}
       FEEDBACK_DLQ: ${FEEDBACK_DLQ:-feedback_processing_queue.dlq}
+      DAILY_ANALYSIS_LIMIT: ${DAILY_ANALYSIS_LIMIT:-100}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
     depends_on:
       mysql:
