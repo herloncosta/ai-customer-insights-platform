@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import amqp from 'amqplib';
 import { logger } from './lib/logger';
-import { prisma } from './lib/prisma';
+import { prisma } from '@insights/db';
 import { analyzeFeedback } from './lib/analyzer';
 
 const RABBITMQ_URL = process.env.RABBITMQ_URL ?? 'amqp://guest:guest@rabbitmq:5672';

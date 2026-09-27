@@ -86,8 +86,10 @@ export async function analyzeFeedback(content: string): Promise<AnalysisResult> 
     });
   }
 
+  // OPENAI_BASE_URL permite apontar para gateway compatível (ex. OpenRouter).
   const client = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
+    baseURL: process.env.OPENAI_BASE_URL || undefined,
     timeout: 30_000,
     maxRetries: 0, // retry manual com backoff abaixo
   });

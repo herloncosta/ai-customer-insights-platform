@@ -46,8 +46,8 @@ services:
 
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./backend/Dockerfile
     container_name: insights-backend
     restart: unless-stopped
     ports:
@@ -77,8 +77,8 @@ services:
 
   worker:
     build:
-      context: ./worker
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./worker/Dockerfile
     container_name: insights-worker
     restart: unless-stopped
     environment:
@@ -89,7 +89,8 @@ services:
       FEEDBACK_QUEUE: ${FEEDBACK_QUEUE:-feedback_processing_queue}
       FEEDBACK_DLQ: ${FEEDBACK_DLQ:-feedback_processing_queue.dlq}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      OPENAI_MODEL: ${OPENAI_MODEL:-openai/gpt-4o-mini}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
     depends_on:
       mysql:
         condition: service_healthy

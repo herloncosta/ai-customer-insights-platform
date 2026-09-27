@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { createApp } from './app';
 import { logger } from './lib/logger';
-import { prisma } from './lib/prisma';
+import { prisma } from '@insights/db';
 import { initQueue } from './lib/queue';
 
 const PORT = Number(process.env.PORT ?? 3001);

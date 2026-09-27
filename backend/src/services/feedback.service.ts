@@ -1,9 +1,6 @@
-import { prisma } from '../lib/prisma';
+import { prisma, type Feedback, type FeedbackWithAnalysis } from '@insights/db';
 import { publishFeedback } from '../lib/queue';
-import type { Analysis, Feedback } from '../generated/prisma/client';
 import type { CreateFeedbackInput, ListFeedbacksQuery } from '../schemas/feedback.schema';
-
-export type FeedbackWithAnalysis = Feedback & { analysis: Analysis | null };
 
 // RF-01 + RF-02: persiste PENDING e publica na fila (a IA roda no worker, fora da requisição).
 export async function createFeedback(input: CreateFeedbackInput): Promise<Feedback> {
