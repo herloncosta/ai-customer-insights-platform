@@ -87,6 +87,15 @@ describe('GETs', () => {
     await request(app).get('/api/v1/feedbacks/nao-uuid').expect(400);
   });
 
+  it('CORS: origem estranha não recebe ACAO; origem certa recebe', async () => {
+    const evil = await request(app).get('/api/v1/feedbacks/metrics').set('Origin', 'http://evil.com');
+    expect(evil.headers['access-control-allow-origin']).toBeUndefined();
+    const ok = await request(app)
+      .get('/api/v1/feedbacks/metrics')
+      .set('Origin', process.env.CORS_ORIGIN ?? 'http://localhost:5173');
+    expect(ok.headers['access-control-allow-origin']).toBe(process.env.CORS_ORIGIN ?? 'http://localhost:5173');
+  });
+
   it('GET /metrics com byDay de 14 dias', async () => {
     const res = await request(app).get('/api/v1/feedbacks/metrics').expect(200);
     expect(res.body.total).toBe(2);
@@ -95,4 +104,12 @@ describe('GETs', () => {
     expect(res.body.topTags).toEqual([{ tag: 'boleto', count: 1 }]);
     expect(res.body.byDay).toHaveLength(14);
   });
+
+  // Por último: cria ~30 linhas de propósito (2 POSTs anteriores + 28 aqui).
+  it('429 após 30 POSTs/min (protege custo da IA)', async () => {
+    for (let i = 0; i < 28; i++) {
+      await request(app).post('/api/v1/feedbacks').send(VALID);
+    }
+    await request(app).post('/api/v1/feedbacks').send(VALID).expect(429);
+  }, 60000);
 });
