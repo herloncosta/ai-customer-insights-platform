@@ -2,15 +2,17 @@
 .env
 *.local
 
-# Deps / build
+# Deps / build (lockfile único na raiz do workspace; serviços não têm lock próprio)
 node_modules/
+backend/package-lock.json
+worker/package-lock.json
 backend/dist/
 worker/dist/
+shared/dist/
 frontend/dist/
 
-# Prisma (migrations DEVEM ser versionadas — D-10; apenas o client gerado é ignorado)
-backend/src/generated/
-worker/src/generated/
+# Prisma (migrations em shared/ DEVEM ser versionadas — D-10; apenas o client gerado é ignorado)
+shared/src/generated/
 
 # Logs / OS
 *.log

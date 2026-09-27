@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import * as service from '../services/feedback.service';
-import type { FeedbackWithAnalysis } from '../services/feedback.service';
+import type { FeedbackWithAnalysis } from '@insights/db';
 import { logger } from '../lib/logger';
 import type {
   CreateFeedbackInput,

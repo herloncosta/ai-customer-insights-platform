@@ -5,19 +5,22 @@ WORKDIR /app
 # wget (healthcheck) + openssl (Prisma MySQL) no Alpine
 RUN apk add --no-cache openssl wget
 
+# Workspace raiz: instala uma vez para backend + shared (@insights/db)
 COPY package*.json ./
-COPY prisma ./prisma/
+COPY shared/package*.json ./shared/
+COPY backend/package*.json ./backend/
 RUN npm install
 
-COPY . .
+COPY shared ./shared/
+COPY backend ./backend/
 
-# Prisma 7 resolve prisma.config.ts (env("DATABASE_URL")) em todo comando do CLI,
-# inclusive generate — que não conecta no banco. Dummy de build; a URL real vem
-# do ambiente em runtime via compose. (.env está no .dockerignore)
+# Prisma 7 resolve prisma.config.ts (env("DATABASE_URL")) no generate — dummy de
+# build, a URL real vem do compose em runtime (D-09).
 ARG DATABASE_URL="mysql://placeholder:placeholder@mysql:3306/placeholder"
-RUN npx prisma generate
-RUN npm run build
+RUN npm run generate --workspace shared
+RUN npm run build --workspace shared
+RUN npm run build --workspace backend
 
 EXPOSE 3001
 
-CMD ["node", "dist/index.js"]
+CMD ["node", "backend/dist/index.js"]

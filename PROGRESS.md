@@ -10,9 +10,9 @@
 ## 0. Onboarding em 5 passos
 
 1. `git pull origin develop`
-2. `cp .env.example .env` (raiz) e `cp backend/.env.example backend/.env` (`.env` nunca commitados)
-3. Rodar `npm/npx/prisma` **sempre dentro da pasta do serviço** (`backend/`, `worker/`, `frontend/`) — ver D-08
-4. Subir tudo: `docker compose up --build`
+2. `cp .env.example .env` (raiz), `cp backend/.env.example backend/.env` e `cp worker/.env.example worker/.env` (`.env` nunca commitados; `OPENAI_API_KEY` + `OPENAI_BASE_URL` para OpenRouter no `.env` da raiz e do worker)
+3. Workspace npm na raiz: `npm install` (lockfile único), `npm run generate --workspace shared`, `npm run build` (shared → backend → worker); migrate via `npm run migrate --workspace shared`
+4. Subir tudo: `docker compose up --build` (backend/worker buildam com contexto da raiz)
 5. Respeitar as decisões do AGENTS.md §6 (não reverter sem registrar nova decisão)
 
 ## 1. Estado atual
@@ -20,7 +20,7 @@
 ### ✅ Pronto
 
 - [x] Monorepo + `docker-compose.yml` (mysql, rabbitmq, backend, worker, frontend) com healthchecks MySQL/RabbitMQ
-- [x] `backend/prisma/schema.prisma` (Feedback + Analysis, §3) + `backend/prisma.config.ts` (Prisma 7.10)
+- [x] `shared/prisma/schema.prisma` (fonte única, Feedback + Analysis §3) + `shared/prisma.config.ts` (Prisma 7.10); pacote `@insights/db` (workspace npm) com singleton `prisma` + tipos — backend/worker importam dele, zero drift de schema
 - [x] Schemas Zod entrada/saída (`backend/src/schemas/feedback.schema.ts`) + middleware `validate` aplicado às rotas + 9 testes vitest
 - [x] Logger `pino` no backend e worker (`src/lib/logger.ts`): terminal pretty + `<root>/logs/app.log`, `LOG_LEVEL`, `redact`
 - [x] Worker scaffold: consumer com retry, fila + DLQ declaradas, tipos `amqplib` corrigidos (`ChannelModel`)
@@ -33,7 +33,8 @@
 1. ~~`prisma migrate dev` inicial + camada DB~~ ✅ feito (F1 acima)
 2. ~~`POST /api/v1/feedbacks` real~~ ✅ feito: salva `PENDING` → publica na fila → 202 (RF-01/RF-02); boot pré-aquece pool DB + AMQP (`initQueue`, RNF-01: ~90ms quente no sandbox, frio ~220ms)
 3. ~~`GET` lista + `GET /:id` + `GET /metrics`~~ ✅ feito: lista com `page/limit/status/sentiment/urgency/category` + `include analysis` (mais recentes primeiro), `/:id` com 404/400, `metrics` com `total/bySentiment/byUrgency/topTags[10]`; serialização Date→ISO + Json→string[] (`toFeedbackDto`)
-4. ~~Worker: OpenAI + transições + DLQ~~ ✅ feito: `worker/src/lib/analyzer.ts` (`gpt-4o-mini` structured output strict §5 + retry 3× backoff 1s/2s em 429/5xx/rede + `normalizeAnalysis` com teto 20 palavras) + `src/lib/prisma.ts` (adapter) + consumer com `PROCESSING → (Analysis + PROCESSED) | FAILED`, idempotência via ack-skip + `upsert`, DLQ (RF-03/RF-04, RNF-03); e2e pipeline + redelivery + DLQ verificados com `ANALYZER_PROVIDER=mock` (sem chave real — e2e OpenAI de verdade pendente de `OPENAI_API_KEY`); `worker/Dockerfile` com generate (D-09); 4 testes vitest
+4. ~~Worker: OpenAI + transições + DLQ~~ ✅ feito: `worker/src/lib/analyzer.ts` (`gpt-4o-mini` structured output strict §5 + retry 3× backoff 1s/2s em 429/5xx/rede + `normalizeAnalysis` com teto 20 palavras) + consumer com `PROCESSING → (Analysis + PROCESSED) | FAILED`, idempotência via ack-skip + `upsert`, DLQ (RF-03/RF-04, RNF-03); `worker/Dockerfile` com generate (D-09); 4 testes vitest
+- [x] **E2e real com OpenRouter:** `OPENAI_BASE_URL` no analyzer + compose + `.env.examples`; pipeline POST → `PROCESSED` com análise real (`NEGATIVE/HIGH/BUG`, resumo PT-BR) + redelivery sem duplicar + DLQ; `ANALYZER_PROVIDER=mock` segue para e2e sem cota
 5. Frontend (RF-06): form, tabela com filtros, modal de análise, dashboard de métricas
 6. Testes de integração + cobertura ≥80% (RNF-04); criar configs ESLint/Prettier (o script `lint` existe, os arquivos de config ainda não)
 7. Seed de desenvolvimento (`prisma db seed`)
@@ -41,20 +42,16 @@
 ## 2. Comandos por serviço
 
 ```bash
-# raiz
+# raiz (workspace npm: backend + worker + shared)
+npm install                          # lockfile único na raiz
+npm run generate --workspace shared  # exige DATABASE_URL (dummy basta)
+npm run build                        # shared → backend → worker
+npm run migrate --workspace shared   # com DB no ar (shared/prisma/migrations/)
 docker compose up --build
 
-# backend/
-npm install
-npx prisma validate          # exige DATABASE_URL (via .env)
-npx prisma generate
-npx prisma migrate dev       # quando houver DB (cria backend/prisma/migrations/)
+# backend/ e worker/ (importam @insights/db; sem prisma próprio)
 npm run dev | npm run build | npm start
 npx vitest run
-
-# worker/
-npm install
-npm run dev | npm run build | npm start
 
 # frontend/
 npm install
@@ -63,12 +60,12 @@ npm run dev | npm run build
 
 ## 3. Gotchas (não quebrar)
 
-- `npx prisma` na raiz baixa o Prisma 8 RC (produto diferente) — sempre dentro de `backend/`
+- `npx prisma` na raiz baixa o Prisma 8 RC (produto diferente) — rodar via workspace: `npm run generate|migrate --workspace shared`
 - `prisma generate` no v7 exige `DATABASE_URL` resolvível (no Docker, via `ARG` dummy — D-09)
-- `new PrismaClient()` sem adapter lança erro no v7 (D-01)
-- Após criar/editar `.env`, recarregar a janela do VS Code (Prisma Language Server)
-- Migrations **devem** ser commitadas (D-10)
-- `generator output` vive em `backend/src/generated/prisma` (não em `prisma/generated`): `rootDir: src` do tsc proíbe importar de fora de `src/`; `.gitignore` cobre `backend/src/generated/`
-- `import { PrismaClient } from '@prisma/client'` **não funciona** no v7 (módulo `.prisma/client/default` ausente) — importar de `../generated/prisma/client`
+- `new PrismaClient()` sem adapter lança erro no v7 (D-01); o singleton mora em `@insights/db` (`shared/src/index.ts`)
+- Schema vive só em `shared/prisma/schema.prisma` — backend/worker importam `@insights/db`, nunca copiar (drift)
+- `generator output` vive em `shared/src/generated/prisma`: `rootDir: src` do tsc proíbe importar de fora de `src/`; `.gitignore` cobre `shared/src/generated/` + `shared/dist/`
+- `import { PrismaClient } from '@prisma/client'` **não funciona** no v7 (módulo `.prisma/client/default` ausente) — o shared reexporta do client gerado
 - `PrismaMariaDb` aceita connection string direta: `new PrismaMariaDb(DATABASE_URL)`
+- OpenRouter: `OPENAI_BASE_URL=https://openrouter.ai/api/v1` + model prefixado (`openai/gpt-4o-mini`); structured output `json_schema strict` passa pelo gateway
 - `insights_user` precisa de `GRANT ALL PRIVILEGES ON *.*` (shadow DB do `migrate dev`, erro P3014) — comando: `docker exec insights-mysql mysql -u root -p$MYSQL_ROOT_PASSWORD -e "GRANT ALL PRIVILEGES ON *.* TO 'insights_user'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"`

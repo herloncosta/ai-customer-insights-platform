@@ -1,0 +1,10 @@
+{
+  "name": "ai-customer-insights-platform",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": ["backend", "worker", "shared"],
+  "scripts": {
+    "generate": "npm run generate --workspace shared",
+    "build": "npm run build --workspace shared && npm run build --workspace backend && npm run build --workspace worker"
+  }
+}

@@ -1,0 +1,17 @@
+# Deps e build (reconstruídos dentro da imagem)
+node_modules
+**/node_modules
+**/dist
+
+# Prisma: client gerado é recriado via generate no build
+**/src/generated
+
+# Segredos e logs locais
+.env
+**/.env
+*.log
+logs
+**/logs
+
+# Git e docs de trabalho
+.git
