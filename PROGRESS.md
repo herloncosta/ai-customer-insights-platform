@@ -26,6 +26,7 @@
 - [x] Worker scaffold: consumer com retry, fila + DLQ declaradas, tipos `amqplib` corrigidos (`ChannelModel`)
 - [x] Upgrades Prisma v5 → v6 → v7 (commits `06f2d6b`, `e1e1da6`)
 - [x] **F1 — camada DB backend:** `@prisma/adapter-mariadb` + `src/lib/prisma.ts` (adapter obrigatório v7) + `src/lib/queue.ts` (singleton publish persistente, mesmos args DLQ D-05) + `migrate dev --name init` aplicada (`prisma/migrations/20260927114545_init/`); `generator output` movido para `../src/generated/prisma` (exigência do `rootDir: src` do tsc — importar de `prisma/generated` quebra o build); smoke test OK (insert PENDING + publish + delete, fila purgada); `npm run build` + 9 testes vitest verdes
+- [x] **Refactor backend em camadas:** `src/app.ts` (factory Express, `GET /health`) + `src/routes/feedback.routes.ts` + `src/controllers/feedback.controller.ts` (HTTP + `toFeedbackDto`) + `src/services/feedback.service.ts` (Prisma + fila); `src/index.ts` só com boot/warmup; tipos Prisma importados do client gerado (`FeedbackWithAnalysis`); smoke e2e pós-refactor OK
 
 ### ⏳ Pendente (ordem sugerida)
 
