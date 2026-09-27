@@ -1,52 +1,28 @@
-import { useCallback, useEffect, useState } from 'react';
-import { getMetrics, listFeedbacks, type Feedback, type Filters, type Metrics, type Pagination } from './lib/api';
-import FeedbackForm from './components/FeedbackForm';
-import FeedbackTable from './components/FeedbackTable';
-import AnalysisModal from './components/AnalysisModal';
-import MetricsDashboard from './components/MetricsDashboard';
+import { useState } from 'react';
+import { useHashRoute, type Route } from './hooks/useHashRoute';
+import DashboardScreen from './screens/DashboardScreen';
+import FeedbacksScreen from './screens/FeedbacksScreen';
+import NewFeedbackScreen from './screens/NewFeedbackScreen';
 import Toast, { type ToastData } from './components/Toast';
 
 let toastId = 0;
 
+const tabs: { route: Route; label: string }[] = [
+  { route: 'dashboard', label: 'Dashboard' },
+  { route: 'feedbacks', label: 'Feedbacks' },
+];
+
 export default function App() {
-  const [items, setItems] = useState<Feedback[]>([]);
-  const [pagination, setPagination] = useState<Pagination | null>(null);
-  const [filters, setFilters] = useState<Filters>({ page: 1 });
-  const [metrics, setMetrics] = useState<Metrics | null>(null);
-  const [selected, setSelected] = useState<Feedback | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { route, navigate } = useHashRoute();
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastData | null>(null);
+  const [nonce, setNonce] = useState(0);
 
   function notify(kind: ToastData['kind'], text: string) {
     const id = ++toastId;
     setToast({ id, kind, text });
     setTimeout(() => setToast((t) => (t?.id === id ? null : t)), 3500);
   }
-
-  const refresh = useCallback(async () => {
-    try {
-      const [list, m] = await Promise.all([listFeedbacks(filters), getMetrics()]);
-      setItems(list.data);
-      setPagination(list.pagination);
-      setMetrics(m);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Falha ao carregar');
-    } finally {
-      setLoading(false);
-    }
-  }, [filters]);
-
-  useEffect(() => {
-    setLoading(true);
-    void refresh();
-  }, [refresh]);
-
-  useEffect(() => {
-    const t = setInterval(() => void refresh(), 5000);
-    return () => clearInterval(t);
-  }, [refresh]);
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
@@ -61,7 +37,28 @@ export default function App() {
               <p className="text-xs leading-tight text-gray-500">Análise de feedback com IA</p>
             </div>
           </div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+          <nav className="flex items-center gap-1 text-sm font-medium">
+            {tabs.map((t) => (
+              <a
+                key={t.route}
+                href={t.route === 'dashboard' ? '#/' : `#/${t.route}`}
+                className={`rounded-lg px-3 py-1.5 transition ${
+                  route === t.route ? 'bg-indigo-50 text-indigo-700' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
+                }`}
+              >
+                {t.label}
+              </a>
+            ))}
+            <a
+              href="#/novo"
+              className={`ml-1 rounded-lg px-3 py-1.5 transition ${
+                route === 'novo' ? 'bg-indigo-600 text-white' : 'bg-indigo-600/90 text-white hover:bg-indigo-500'
+              }`}
+            >
+              + Novo feedback
+            </a>
+          </nav>
+          <span className="hidden items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 sm:inline-flex">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
@@ -74,30 +71,28 @@ export default function App() {
         {error && (
           <div className="flex items-center justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
             <span>{error} — verifique se a API está no ar.</span>
-            <button className="rounded-lg border border-rose-300 px-3 py-1 font-medium hover:bg-rose-100" onClick={() => void refresh()}>
+            <button
+              className="rounded-lg border border-rose-300 px-3 py-1 font-medium hover:bg-rose-100"
+              onClick={() => {
+                setError(null);
+                setNonce((n) => n + 1);
+              }}
+            >
               Tentar de novo
             </button>
           </div>
         )}
-        <MetricsDashboard metrics={metrics} />
-        <div className="grid items-start gap-4 lg:grid-cols-[340px_1fr]">
-          <FeedbackForm
+        {route === 'dashboard' && <DashboardScreen key={nonce} onError={setError} />}
+        {route === 'feedbacks' && <FeedbacksScreen key={nonce} onError={setError} />}
+        {route === 'novo' && (
+          <NewFeedbackScreen
             onCreated={() => {
               notify('success', 'Feedback enviado para análise');
-              void refresh();
+              navigate('feedbacks');
             }}
           />
-          <FeedbackTable
-            items={items}
-            pagination={pagination}
-            filters={filters}
-            loading={loading}
-            onFilters={setFilters}
-            onSelect={setSelected}
-          />
-        </div>
+        )}
       </main>
-      {selected && <AnalysisModal item={selected} onClose={() => setSelected(null)} />}
       <Toast toast={toast} />
     </div>
   );
