@@ -3,6 +3,7 @@ import { prisma } from '@insights/db';
 import { markFailed, processFeedback } from './feedback.processor';
 
 beforeAll(async () => {
+  process.env.ANALYZER_PROVIDER = 'mock';
   await prisma.analysis.deleteMany();
   await prisma.feedback.deleteMany();
 });

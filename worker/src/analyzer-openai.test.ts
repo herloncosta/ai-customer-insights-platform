@@ -30,7 +30,7 @@ function completion(content: unknown) {
 
 afterEach(() => {
   vi.resetAllMocks();
-  delete process.env.ANALYZER_PROVIDER;
+  process.env.ANALYZER_PROVIDER = 'mock';
 });
 
 describe('analyzeFeedback via OpenAI-compatível (SDK mockado)', () => {

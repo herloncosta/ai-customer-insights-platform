@@ -5,6 +5,7 @@ import { prisma } from '@insights/db';
 import { createApp } from './app';
 
 const app = createApp();
+const RABBITMQ_URL = process.env.RABBITMQ_URL ?? 'amqp://guest:guest@localhost:5672';
 const VALID = {
   customerName: 'Integração Silva',
   email: 'integracao@teste.com',
@@ -12,7 +13,7 @@ const VALID = {
 };
 
 async function purgeQueue(): Promise<void> {
-  const conn = await amqp.connect('amqp://guest:guest@localhost:5672');
+  const conn = await amqp.connect(RABBITMQ_URL);
   const ch = await conn.createChannel();
   await ch.purgeQueue('feedback_processing_queue').catch(() => undefined);
   await conn.close();
@@ -106,6 +107,13 @@ describe('GETs', () => {
   });
 
   // Por último: cria ~30 linhas de propósito (2 POSTs anteriores + 28 aqui).
+  it('429 com mensagem de cota quando DAILY_ANALYSIS_LIMIT=0', async () => {
+    process.env.DAILY_ANALYSIS_LIMIT = '0';
+    const res = await request(app).post('/api/v1/feedbacks').send(VALID).expect(429);
+    expect(res.body.error).toMatch(/Cota diária/);
+    delete process.env.DAILY_ANALYSIS_LIMIT;
+  });
+
   it('429 após 30 POSTs/min (protege custo da IA)', async () => {
     for (let i = 0; i < 28; i++) {
       await request(app).post('/api/v1/feedbacks').send(VALID);
