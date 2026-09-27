@@ -21,9 +21,7 @@ describe('createFeedbackSchema', () => {
   });
 
   it('rejeita email inválido', () => {
-    expect(() =>
-      createFeedbackSchema.parse({ ...validBody, email: 'nao-e-email' }),
-    ).toThrow();
+    expect(() => createFeedbackSchema.parse({ ...validBody, email: 'nao-e-email' })).toThrow();
   });
 
   it('rejeita content curto (< 10 chars)', () => {
@@ -31,9 +29,7 @@ describe('createFeedbackSchema', () => {
   });
 
   it('rejeita chaves desconhecidas (strict / mass assignment)', () => {
-    expect(() =>
-      createFeedbackSchema.parse({ ...validBody, role: 'admin' }),
-    ).toThrow();
+    expect(() => createFeedbackSchema.parse({ ...validBody, role: 'admin' })).toThrow();
   });
 });
 
@@ -61,9 +57,7 @@ describe('listFeedbacksQuerySchema', () => {
 
 describe('feedbackIdParamSchema', () => {
   it('aceita UUID e rejeita id malformado', () => {
-    expect(() =>
-      feedbackIdParamSchema.parse({ id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479' }),
-    ).not.toThrow();
+    expect(() => feedbackIdParamSchema.parse({ id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479' })).not.toThrow();
     expect(() => feedbackIdParamSchema.parse({ id: '123' })).toThrow();
   });
 });
@@ -88,7 +82,8 @@ describe('output schemas (contratos §4)', () => {
       byDay: Array.from({ length: 14 }, (_, i) => ({ date: `2026-09-${String(i + 1).padStart(2, '0')}`, total: i })),
     };
     expect(() => metricsSchema.parse(base)).not.toThrow();
-    const { topTags: _omitted, ...withoutTags } = base;
+    const withoutTags = { ...base };
+    delete (withoutTags as { topTags?: unknown }).topTags;
     expect(() => metricsSchema.parse(withoutTags)).toThrow();
   });
 });

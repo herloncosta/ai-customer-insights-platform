@@ -23,8 +23,13 @@ export default function FeedbacksScreen({ onError }: { onError: (msg: string | n
     }
   }, [filters, onError]);
 
-  useEffect(() => {
+  function handleFilters(f: Filters) {
     setLoading(true);
+    setFilters(f);
+  }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- carga inicial: o efeito assina os dados, não deriva estado
     void refresh();
   }, [refresh]);
 
@@ -40,7 +45,7 @@ export default function FeedbacksScreen({ onError }: { onError: (msg: string | n
         pagination={pagination}
         filters={filters}
         loading={loading}
-        onFilters={setFilters}
+        onFilters={handleFilters}
         onSelect={setSelected}
       />
       {selected && <AnalysisModal item={selected} onClose={() => setSelected(null)} />}

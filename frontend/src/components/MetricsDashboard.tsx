@@ -25,7 +25,12 @@ export default function MetricsDashboard({ metrics }: { metrics: Metrics | null 
         <StatCard title="Total" value={String(metrics.total)} hint="feedbacks recebidos" accent="bg-indigo-500" />
         <StatCard title="Aguardando IA" value={String(pending)} hint="na fila de análise" accent="bg-amber-400" />
         <StatCard title="Alta urgência" value={String(critical)} hint="HIGH + CRITICAL" accent="bg-rose-500" />
-        <StatCard title="Negativos" value={String(metrics.bySentiment.NEGATIVE)} hint="requerem atenção" accent="bg-orange-400" />
+        <StatCard
+          title="Negativos"
+          value={String(metrics.bySentiment.NEGATIVE)}
+          hint="requerem atenção"
+          accent="bg-orange-400"
+        />
       </div>
       <div className="mt-3 grid gap-3 md:grid-cols-3">
         <div className={card}>
@@ -40,7 +45,10 @@ export default function MetricsDashboard({ metrics }: { metrics: Metrics | null 
             <div key={k} className="mb-1.5 flex items-center gap-2 text-sm">
               <span className="w-16 text-gray-600 dark:text-gray-300">{k}</span>
               <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
-                <div className={`h-full rounded-full ${bar}`} style={{ width: `${analyzed ? (v / analyzed) * 100 : 0}%` }} />
+                <div
+                  className={`h-full rounded-full ${bar}`}
+                  style={{ width: `${analyzed ? (v / analyzed) * 100 : 0}%` }}
+                />
               </div>
               <strong className="w-6 text-right text-gray-900 dark:text-white">{v}</strong>
             </div>
@@ -59,7 +67,10 @@ export default function MetricsDashboard({ metrics }: { metrics: Metrics | null 
             <div key={k} className="mb-1.5 flex items-center gap-2 text-sm">
               <span className="w-16 text-gray-600 dark:text-gray-300">{k}</span>
               <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
-                <div className={`h-full rounded-full ${bar}`} style={{ width: `${analyzed ? (v / analyzed) * 100 : 0}%` }} />
+                <div
+                  className={`h-full rounded-full ${bar}`}
+                  style={{ width: `${analyzed ? (v / analyzed) * 100 : 0}%` }}
+                />
               </div>
               <strong className="w-6 text-right text-gray-900 dark:text-white">{v}</strong>
             </div>
@@ -90,7 +101,13 @@ export default function MetricsDashboard({ metrics }: { metrics: Metrics | null 
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={days} margin={{ top: 8, right: 8, bottom: 0, left: -18 }}>
               <CartesianGrid stroke={grid} strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="label" tick={{ fill: axis, fontSize: 11 }} tickLine={false} axisLine={{ stroke: grid }} interval={2} />
+              <XAxis
+                dataKey="label"
+                tick={{ fill: axis, fontSize: 11 }}
+                tickLine={false}
+                axisLine={{ stroke: grid }}
+                interval={2}
+              />
               <YAxis tick={{ fill: axis, fontSize: 11 }} tickLine={false} axisLine={false} allowDecimals={false} />
               <Tooltip
                 contentStyle={{
@@ -102,7 +119,14 @@ export default function MetricsDashboard({ metrics }: { metrics: Metrics | null 
                 labelFormatter={(_, payload) => payload?.[0]?.payload?.date?.split('-').reverse().join('/') ?? ''}
                 formatter={(v) => [`${v} feedbacks`, 'Volume']}
               />
-              <Area type="monotone" dataKey="total" stroke="#6366f1" strokeWidth={2} fill="#6366f1" fillOpacity={dark ? 0.35 : 0.15} />
+              <Area
+                type="monotone"
+                dataKey="total"
+                stroke="#6366f1"
+                strokeWidth={2}
+                fill="#6366f1"
+                fillOpacity={dark ? 0.35 : 0.15}
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>

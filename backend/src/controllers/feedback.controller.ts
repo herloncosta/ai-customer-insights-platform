@@ -2,12 +2,7 @@ import type { Request, Response } from 'express';
 import * as service from '../services/feedback.service';
 import type { FeedbackWithAnalysis } from '@insights/db';
 import { logger } from '../lib/logger';
-import type {
-  CreateFeedbackInput,
-  FeedbackDto,
-  FeedbackIdParam,
-  ListFeedbacksQuery,
-} from '../schemas/feedback.schema';
+import type { CreateFeedbackInput, FeedbackDto, FeedbackIdParam, ListFeedbacksQuery } from '../schemas/feedback.schema';
 
 export async function create(req: Request, res: Response): Promise<void> {
   try {

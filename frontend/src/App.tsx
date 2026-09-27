@@ -14,7 +14,15 @@ const tabs: { route: Route; label: string; icon: React.ReactNode }[] = [
     route: 'dashboard',
     label: 'Dashboard',
     icon: (
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <svg
+        width="17"
+        height="17"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      >
         <rect x="3" y="3" width="7" height="9" rx="1" />
         <rect x="14" y="3" width="7" height="5" rx="1" />
         <rect x="14" y="12" width="7" height="9" rx="1" />
@@ -26,7 +34,15 @@ const tabs: { route: Route; label: string; icon: React.ReactNode }[] = [
     route: 'feedbacks',
     label: 'Feedbacks',
     icon: (
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <svg
+        width="17"
+        height="17"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      >
         <path d="M8 6h13M8 12h13M8 18h13" />
         <circle cx="4" cy="6" r="1" />
         <circle cx="4" cy="12" r="1" />
@@ -36,7 +52,17 @@ const tabs: { route: Route; label: string; icon: React.ReactNode }[] = [
   },
 ];
 
-function NavLink({ active, href, onClick, children }: { active: boolean; href: string; onClick?: () => void; children: React.ReactNode }) {
+function NavLink({
+  active,
+  href,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  href: string;
+  onClick?: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <a
       href={href}
@@ -92,7 +118,15 @@ function Shell() {
               route === 'novo' ? 'bg-indigo-500' : 'bg-indigo-600 hover:bg-indigo-500'
             }`}
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            >
               <path d="M12 5v14M5 12h14" />
             </svg>
             Novo feedback

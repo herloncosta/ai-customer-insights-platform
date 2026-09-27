@@ -9,7 +9,10 @@
     "generate": "prisma generate",
     "migrate": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint src && prettier --check src --ignore-path ../.prettierignore",
+    "format": "prettier --write src --ignore-path ../.prettierignore",
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/adapter-mariadb": "^7.10.0",
@@ -18,6 +21,7 @@
   "devDependencies": {
     "@types/node": "^20.12.12",
     "prisma": "^7.10.0",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "tsx": "^4.16.2"
   }
 }

@@ -8,13 +8,7 @@ export const sentimentSchema = z.enum(['POSITIVE', 'NEGATIVE', 'NEUTRAL']);
 
 export const urgencySchema = z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']);
 
-export const categorySchema = z.enum([
-  'BUG',
-  'FEATURE_REQUEST',
-  'BILLING',
-  'USABILITY',
-  'OTHER',
-]);
+export const categorySchema = z.enum(['BUG', 'FEATURE_REQUEST', 'BILLING', 'USABILITY', 'OTHER']);
 
 export const createFeedbackSchema = z
   .object({

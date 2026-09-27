@@ -3,7 +3,10 @@ import StatusBadge from './StatusBadge';
 
 export default function AnalysisModal({ item, onClose }: { item: Feedback; onClose: () => void }) {
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-gray-900/50 p-4 dark:bg-black/60" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-40 flex items-center justify-center bg-gray-900/50 p-4 dark:bg-black/60"
+      onClick={onClose}
+    >
       <div
         className="relative max-h-[85vh] w-full max-w-xl overflow-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900"
         onClick={(e) => e.stopPropagation()}
@@ -46,7 +49,10 @@ export default function AnalysisModal({ item, onClose }: { item: Feedback; onClo
               <dd className="m-0 mt-1 flex flex-wrap gap-1.5">
                 {item.analysis.tags.length === 0 && <span className="text-gray-400">—</span>}
                 {item.analysis.tags.map((t) => (
-                  <span key={t} className="rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                  <span
+                    key={t}
+                    className="rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300"
+                  >
                     {t}
                   </span>
                 ))}

@@ -28,6 +28,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 }
 
 // Instância única via contexto — todo consumidor re-renderiza junto no toggle.
+// eslint-disable-next-line react-refresh/only-export-components -- hook e provider coesos no mesmo módulo
 export function useTheme() {
   const ctx = useContext(ThemeContext);
   if (!ctx) throw new Error('useTheme fora do ThemeProvider');

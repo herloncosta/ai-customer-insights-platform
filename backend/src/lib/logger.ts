@@ -3,8 +3,7 @@ import pino from 'pino';
 
 const LOG_LEVEL = (process.env.LOG_LEVEL ?? 'info') as pino.LevelWithSilent;
 
-const LOG_FILE =
-  process.env.LOG_FILE ?? path.resolve(process.cwd(), 'logs', 'app.log');
+const LOG_FILE = process.env.LOG_FILE ?? path.resolve(process.cwd(), 'logs', 'app.log');
 
 export const logger = pino(
   {

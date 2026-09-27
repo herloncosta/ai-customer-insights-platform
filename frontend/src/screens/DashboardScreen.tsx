@@ -15,6 +15,7 @@ export default function DashboardScreen({ onError }: { onError: (msg: string | n
   }, [onError]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- carga inicial: o efeito assina os dados, não deriva estado
     void refresh();
   }, [refresh]);
 
