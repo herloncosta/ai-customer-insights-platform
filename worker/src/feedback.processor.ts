@@ -2,8 +2,6 @@ import { prisma } from '@insights/db';
 import { analyzeFeedback } from './lib/analyzer';
 import { logger } from './lib/logger';
 
-// RF-03/RF-04: PROCESSING → IA → (Analysis + PROCESSED).
-// Idempotente (RNF-03): redelivery de um já PROCESSADO só dá ack.
 export async function processFeedback(feedbackId: string): Promise<void> {
   const existing = await prisma.feedback.findUnique({
     where: { id: feedbackId },
@@ -28,7 +26,6 @@ export async function processFeedback(feedbackId: string): Promise<void> {
   logger.info({ feedbackId, ...result }, 'feedback processado');
 }
 
-// Caminho de falha: marca FAILED sem nunca quebrar o nack → DLQ.
 export async function markFailed(feedbackId: string): Promise<void> {
   await prisma.feedback
     .update({ where: { id: feedbackId }, data: { status: 'FAILED' } })

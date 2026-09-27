@@ -2,7 +2,6 @@ import { prisma, type Feedback, type FeedbackWithAnalysis } from '@insights/db';
 import { publishFeedback } from '../lib/queue';
 import type { CreateFeedbackInput, ListFeedbacksQuery } from '../schemas/feedback.schema';
 
-// RF-01 + RF-02: persiste PENDING e publica na fila (a IA roda no worker, fora da requisição).
 export async function createFeedback(input: CreateFeedbackInput): Promise<Feedback> {
   const feedback = await prisma.feedback.create({ data: input });
   await publishFeedback(feedback.id);
@@ -37,7 +36,6 @@ export async function getFeedbackById(id: string): Promise<FeedbackWithAnalysis 
   return prisma.feedback.findUnique({ where: { id }, include: { analysis: true } });
 }
 
-// RF-05: agregados para o dashboard (D-02 inclui topTags).
 export async function getMetrics(): Promise<{
   total: number;
   bySentiment: { POSITIVE: number; NEUTRAL: number; NEGATIVE: number };

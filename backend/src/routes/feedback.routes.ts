@@ -11,6 +11,6 @@ export const feedbackRouter = Router();
 
 feedbackRouter.post('/', validate(createFeedbackSchema, 'body'), controller.create);
 feedbackRouter.get('/', validate(listFeedbacksQuerySchema, 'query'), controller.list);
-// Registrada antes de /:id para não colidir (D-04).
+// Ordem importa: /metrics antes de /:id, senão "metrics" cai no validador de UUID.
 feedbackRouter.get('/metrics', controller.metrics);
 feedbackRouter.get('/:id', validate(feedbackIdParamSchema, 'params'), controller.getById);

@@ -9,7 +9,7 @@ export function createApp(): express.Express {
   app.use(cors({ origin: CORS_ORIGIN }));
   app.use(express.json());
 
-  // Healthcheck usado pelo docker-compose (backend -> wget /health)
+  // Remover quebra o healthcheck do compose — não é rota órfã.
   app.get('/health', (_req, res) => {
     res.status(200).json({ status: 'ok', service: 'backend' });
   });

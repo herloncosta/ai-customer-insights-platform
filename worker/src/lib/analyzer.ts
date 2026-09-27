@@ -12,7 +12,6 @@ export type AnalysisResult = {
 const SYSTEM_PROMPT = `Você é um motor de IA especializado em classificação de suporte ao cliente.
 Analise a mensagem e retorne EXATAMENTE um objeto JSON seguindo o schema informado, sem textos adicionais.`;
 
-// Schema §5 do AGENTS.md — strict impõe os enums no próprio modelo.
 const ANALYSIS_JSON_SCHEMA = {
   name: 'feedback_analysis',
   strict: true,
@@ -36,7 +35,7 @@ const ANALYSIS_JSON_SCHEMA = {
 const MAX_ATTEMPTS = 3;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-// Transitório (rede, 429, 5xx) → retry com backoff (RNF-03). 4xx → falha direta.
+// Retry só em transitório (rede, 429, 5xx) — 4xx falha direto.
 export function isRetryable(err: unknown): boolean {
   const status = (err as { status?: number } | null)?.status;
   if (status === undefined) return true;
@@ -47,8 +46,7 @@ const SENTIMENTS = new Set(['POSITIVE', 'NEGATIVE', 'NEUTRAL']);
 const URGENCIES = new Set(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']);
 const CATEGORIES = new Set(['BUG', 'FEATURE_REQUEST', 'BILLING', 'USABILITY', 'OTHER']);
 
-// Garante o contrato RF-03 mesmo se o modelo extrapolar: enums validados,
-// resumo cortado em 20 palavras / 255 chars (limite da coluna), tags saneadas.
+// Impõe o contrato mesmo se o modelo extrapolar (enums, 20 palavras, coluna 255).
 export function normalizeAnalysis(raw: unknown): AnalysisResult {
   const r = raw as Record<string, unknown>;
   if (!r || !SENTIMENTS.has(r.sentiment as string)) throw new Error('sentiment inválido');
@@ -75,7 +73,7 @@ export function normalizeAnalysis(raw: unknown): AnalysisResult {
 }
 
 export async function analyzeFeedback(content: string): Promise<AnalysisResult> {
-  // E2e local sem chave/cota: ANALYZER_PROVIDER=mock retorna análise fixa.
+  // Sem chave/cota: ANALYZER_PROVIDER=mock retorna análise fixa.
   if (process.env.ANALYZER_PROVIDER === 'mock') {
     return normalizeAnalysis({
       sentiment: 'NEUTRAL',
@@ -86,7 +84,6 @@ export async function analyzeFeedback(content: string): Promise<AnalysisResult> 
     });
   }
 
-  // OPENAI_BASE_URL permite apontar para gateway compatível (ex. OpenRouter).
   const client = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
     baseURL: process.env.OPENAI_BASE_URL || undefined,
