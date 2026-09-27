@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { createFeedback } from '../lib/api';
 
-const input = 'rounded border border-gray-300 px-2 py-1.5 text-sm';
+const input =
+  'rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100';
 
 export default function FeedbackForm({ onCreated }: { onCreated: () => void }) {
   const [customerName, setCustomerName] = useState('');
@@ -28,22 +29,39 @@ export default function FeedbackForm({ onCreated }: { onCreated: () => void }) {
   }
 
   return (
-    <form onSubmit={submit} className="rounded-lg border bg-white p-4">
-      <h2 className="mb-3 text-base font-semibold">Novo feedback</h2>
-      <label className="mb-2.5 flex flex-col gap-1 text-sm">
+    <form onSubmit={submit} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <h2 className="text-sm font-semibold text-gray-900">Novo feedback</h2>
+      <p className="mb-4 mt-0.5 text-xs text-gray-500">A IA classifica sentimento, urgência e categoria em segundos.</p>
+      <label className="mb-3 flex flex-col gap-1 text-sm font-medium text-gray-700">
         Nome
-        <input className={input} value={customerName} onChange={(e) => setCustomerName(e.target.value)} required minLength={2} maxLength={100} />
+        <input className={input} placeholder="Ex.: Maria Silva" value={customerName} onChange={(e) => setCustomerName(e.target.value)} required minLength={2} maxLength={100} />
       </label>
-      <label className="mb-2.5 flex flex-col gap-1 text-sm">
+      <label className="mb-3 flex flex-col gap-1 text-sm font-medium text-gray-700">
         E-mail
-        <input className={input} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={255} />
+        <input className={input} placeholder="maria@empresa.com" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={255} />
       </label>
-      <label className="mb-2.5 flex flex-col gap-1 text-sm">
+      <label className="mb-1 flex flex-col gap-1 text-sm font-medium text-gray-700">
         Mensagem
-        <textarea className={input} value={content} onChange={(e) => setContent(e.target.value)} required minLength={10} maxLength={5000} rows={4} />
+        <textarea
+          className={`${input} min-h-28 resize-y`}
+          placeholder="Descreva o problema, sugestão ou dúvida…"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          required
+          minLength={10}
+          maxLength={5000}
+          rows={4}
+        />
       </label>
-      {error && <p className="mb-2 text-sm text-red-700">{error}</p>}
-      <button type="submit" disabled={sending} className="rounded bg-blue-700 px-3.5 py-2 text-sm text-white disabled:opacity-60">
+      <p className={`mb-3 text-right text-xs ${content.length < 10 ? 'text-gray-400' : 'text-gray-500'}`}>
+        {content.length}/5000 · mín. 10
+      </p>
+      {error && <p className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</p>}
+      <button
+        type="submit"
+        disabled={sending}
+        className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-500 disabled:cursor-wait disabled:opacity-60"
+      >
         {sending ? 'Enviando…' : 'Enviar para análise'}
       </button>
     </form>
