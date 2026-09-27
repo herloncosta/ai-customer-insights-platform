@@ -1,3 +1,4 @@
+import Select, { type SingleValue } from 'react-select';
 import type { Feedback, Filters, Pagination } from '../lib/api';
 import { timeAgo } from '../lib/format';
 import StatusBadge from './StatusBadge';
@@ -24,6 +25,8 @@ const urgencyPill: Record<string, string> = {
   CRITICAL: 'bg-rose-100 text-rose-700 font-semibold',
 };
 
+type Option = { value: string; label: string };
+
 function FilterSelect({
   label,
   value,
@@ -35,21 +38,34 @@ function FilterSelect({
   options: string[];
   onChange: (v: string | undefined) => void;
 }) {
+  function handle(opt: SingleValue<Option>) {
+    onChange(opt?.value);
+  }
   return (
     <label className="flex items-center gap-2 text-sm text-gray-600">
       {label}
-      <select
-        className="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none"
-        value={value ?? ''}
-        onChange={(e) => onChange(e.target.value || undefined)}
-      >
-        <option value="">Todos</option>
-        {options.map((o) => (
-          <option key={o} value={o}>
-            {o}
-          </option>
-        ))}
-      </select>
+      <span className="min-w-36">
+        <Select<Option>
+          inputId={`filter-${label}`}
+          value={value ? { value, label: value } : null}
+          options={options.map((o) => ({ value: o, label: o }))}
+          onChange={handle}
+          placeholder="Todos"
+          isClearable
+          isSearchable={false}
+          styles={{
+            control: (base, state) => ({
+              ...base,
+              minHeight: 34,
+              fontSize: 14,
+              borderColor: state.isFocused ? '#6366f1' : '#d1d5db',
+              boxShadow: state.isFocused ? '0 0 0 2px #e0e7ff' : 'none',
+              '&:hover': { borderColor: '#6366f1' },
+            }),
+            menu: (base) => ({ ...base, fontSize: 14, zIndex: 20 }),
+          }}
+        />
+      </span>
     </label>
   );
 }
