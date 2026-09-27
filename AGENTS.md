@@ -249,4 +249,4 @@ const jsonSchema = {
 - **D-09 (Docker):** `RUN npx prisma generate` exige `DATABASE_URL` resolvível no v7 → `backend/Dockerfile` usa `ARG` dummy (runtime usa a var do compose; `.env` está no `.dockerignore`).
 - **D-10 (Git):** repo `herloncosta/ai-customer-insights-platform` (público); fluxo `main` (estável) + `develop` (integração); conventional commits (`feat/fix/chore` + escopo). Migrations do Prisma **devem** ser versionadas (nunca gitignored).
 - **D-11 (Validação):** Zod `.strict()` nos inputs (anti mass-assignment); `email` normalizado para minúsculas; `content` 10–5000 chars.
-- **D-12 (Estado em PROGRESS.md):** o que está pronto vs. pendente vive em `PROGRESS.md` (documento vivo) — atualizar a cada entrega.
+- **D-12 (Histórico):** o acompanhamento de entregas vivia em `PROGRESS.md`, removido na conclusão do projeto — o estado canônico agora é o `README.md`.
