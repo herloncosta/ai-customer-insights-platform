@@ -13,6 +13,7 @@
     "prisma:migrate": "prisma migrate dev"
   },
   "dependencies": {
+    "@prisma/adapter-mariadb": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "amqplib": "^0.10.4",
     "cors": "^2.8.5",
