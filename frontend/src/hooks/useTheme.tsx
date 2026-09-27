@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 export type Theme = 'light' | 'dark';
 
@@ -11,7 +11,9 @@ function initial(): Theme {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
-export function useTheme() {
+const ThemeContext = createContext<{ theme: Theme; toggle: () => void } | null>(null);
+
+export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(initial);
 
   useEffect(() => {
@@ -20,6 +22,14 @@ export function useTheme() {
   }, [theme]);
 
   const toggle = useCallback(() => setTheme((t) => (t === 'dark' ? 'light' : 'dark')), []);
+  const value = useMemo(() => ({ theme, toggle }), [theme, toggle]);
 
-  return { theme, toggle };
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+}
+
+// Instância única via contexto — todo consumidor re-renderiza junto no toggle.
+export function useTheme() {
+  const ctx = useContext(ThemeContext);
+  if (!ctx) throw new Error('useTheme fora do ThemeProvider');
+  return ctx;
 }

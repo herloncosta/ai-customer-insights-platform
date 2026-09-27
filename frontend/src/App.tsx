@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useHashRoute, type Route } from './hooks/useHashRoute';
-import { useTheme } from './hooks/useTheme';
+import { ThemeProvider, useTheme } from './hooks/useTheme';
 import DashboardScreen from './screens/DashboardScreen';
 import FeedbacksScreen from './screens/FeedbacksScreen';
 import NewFeedbackScreen from './screens/NewFeedbackScreen';
@@ -52,7 +52,7 @@ function NavLink({ active, href, onClick, children }: { active: boolean; href: s
   );
 }
 
-export default function App() {
+function Shell() {
   const { route } = useHashRoute();
   const { theme, toggle } = useTheme();
   const [error, setError] = useState<string | null>(null);
@@ -156,5 +156,13 @@ export default function App() {
       </div>
       <Toast toast={toast} />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <Shell />
+    </ThemeProvider>
   );
 }
