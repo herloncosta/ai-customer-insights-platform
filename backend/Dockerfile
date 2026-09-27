@@ -23,4 +23,5 @@ RUN npm run build --workspace backend
 
 EXPOSE 3001
 
-CMD ["node", "backend/dist/index.js"]
+# Aplica migrations pendentes no boot (RNF-06: stack sobe do zero em um comando).
+CMD ["sh", "-c", "npm run migrate:deploy --workspace shared && node backend/dist/index.js"]
