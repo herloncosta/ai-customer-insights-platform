@@ -10,6 +10,9 @@ backend/dist/
 worker/dist/
 shared/dist/
 frontend/dist/
+coverage/
+backend/coverage/
+worker/coverage/
 
 # Prisma (migrations em shared/ DEVEM ser versionadas — D-10; apenas o client gerado é ignorado)
 shared/src/generated/

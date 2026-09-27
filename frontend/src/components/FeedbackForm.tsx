@@ -29,16 +29,37 @@ export default function FeedbackForm({ onCreated }: { onCreated: () => void }) {
   }
 
   return (
-    <form onSubmit={submit} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+    <form
+      onSubmit={submit}
+      className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900"
+    >
       <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Novo feedback</h2>
-      <p className="mb-4 mt-0.5 text-xs text-gray-500 dark:text-gray-400">A IA classifica sentimento, urgência e categoria em segundos.</p>
+      <p className="mb-4 mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+        A IA classifica sentimento, urgência e categoria em segundos.
+      </p>
       <label className="mb-3 flex flex-col gap-1 text-sm font-medium text-gray-700 dark:text-gray-300">
         Nome
-        <input className={input} placeholder="Ex.: Maria Silva" value={customerName} onChange={(e) => setCustomerName(e.target.value)} required minLength={2} maxLength={100} />
+        <input
+          className={input}
+          placeholder="Ex.: Maria Silva"
+          value={customerName}
+          onChange={(e) => setCustomerName(e.target.value)}
+          required
+          minLength={2}
+          maxLength={100}
+        />
       </label>
       <label className="mb-3 flex flex-col gap-1 text-sm font-medium text-gray-700 dark:text-gray-300">
         E-mail
-        <input className={input} placeholder="maria@empresa.com" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={255} />
+        <input
+          className={input}
+          placeholder="maria@empresa.com"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          maxLength={255}
+        />
       </label>
       <label className="mb-1 flex flex-col gap-1 text-sm font-medium text-gray-700 dark:text-gray-300">
         Mensagem
@@ -53,10 +74,12 @@ export default function FeedbackForm({ onCreated }: { onCreated: () => void }) {
           rows={4}
         />
       </label>
-      <p className="mb-3 text-right text-xs text-gray-400 dark:text-gray-500">
-        {content.length}/5000 · mín. 10
-      </p>
-      {error && <p className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-950 dark:text-rose-300">{error}</p>}
+      <p className="mb-3 text-right text-xs text-gray-400 dark:text-gray-500">{content.length}/5000 · mín. 10</p>
+      {error && (
+        <p className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-950 dark:text-rose-300">
+          {error}
+        </p>
+      )}
       <button
         type="submit"
         disabled={sending}

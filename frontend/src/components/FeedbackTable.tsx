@@ -71,7 +71,13 @@ function FilterSelect({
             menu: (base) => ({ ...base, fontSize: 14, zIndex: 20, backgroundColor: dark ? '#1f2937' : '#ffffff' }),
             option: (base, state) => ({
               ...base,
-              backgroundColor: state.isSelected ? '#4f46e5' : state.isFocused ? (dark ? '#374151' : '#eef2ff') : 'transparent',
+              backgroundColor: state.isSelected
+                ? '#4f46e5'
+                : state.isFocused
+                  ? dark
+                    ? '#374151'
+                    : '#eef2ff'
+                  : 'transparent',
               color: state.isSelected ? '#ffffff' : dark ? '#e5e7eb' : '#111827',
             }),
           }}
@@ -113,9 +119,24 @@ export default function FeedbackTable({ items, pagination, filters, loading, onF
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-5 py-3.5 dark:border-gray-800">
         <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Feedbacks</h2>
         <div className="flex flex-wrap gap-3">
-          <FilterSelect label="Status" value={filters.status} options={['PENDING', 'PROCESSING', 'PROCESSED', 'FAILED']} onChange={(status) => onFilters({ ...filters, status, page: 1 })} />
-          <FilterSelect label="Sentimento" value={filters.sentiment} options={['POSITIVE', 'NEUTRAL', 'NEGATIVE']} onChange={(sentiment) => onFilters({ ...filters, sentiment, page: 1 })} />
-          <FilterSelect label="Urgência" value={filters.urgency} options={['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']} onChange={(urgency) => onFilters({ ...filters, urgency, page: 1 })} />
+          <FilterSelect
+            label="Status"
+            value={filters.status}
+            options={['PENDING', 'PROCESSING', 'PROCESSED', 'FAILED']}
+            onChange={(status) => onFilters({ ...filters, status, page: 1 })}
+          />
+          <FilterSelect
+            label="Sentimento"
+            value={filters.sentiment}
+            options={['POSITIVE', 'NEUTRAL', 'NEGATIVE']}
+            onChange={(sentiment) => onFilters({ ...filters, sentiment, page: 1 })}
+          />
+          <FilterSelect
+            label="Urgência"
+            value={filters.urgency}
+            options={['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']}
+            onChange={(urgency) => onFilters({ ...filters, urgency, page: 1 })}
+          />
         </div>
       </div>
       <table className="w-full text-sm">
@@ -159,7 +180,9 @@ export default function FeedbackTable({ items, pagination, filters, loading, onF
                 </td>
                 <td className="px-3 py-3">
                   {f.analysis ? (
-                    <span className={`rounded px-1.5 py-0.5 text-xs ${urgencyPill[f.analysis.urgency]}`}>{f.analysis.urgency}</span>
+                    <span className={`rounded px-1.5 py-0.5 text-xs ${urgencyPill[f.analysis.urgency]}`}>
+                      {f.analysis.urgency}
+                    </span>
                   ) : (
                     <span className="text-gray-300 dark:text-gray-600">—</span>
                   )}
@@ -174,7 +197,9 @@ export default function FeedbackTable({ items, pagination, filters, loading, onF
             <tr>
               <td colSpan={5} className="px-5 py-10 text-center">
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Nenhum feedback por aqui</p>
-                <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">Ajuste os filtros ou envie o primeiro feedback.</p>
+                <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
+                  Ajuste os filtros ou envie o primeiro feedback.
+                </p>
               </td>
             </tr>
           )}

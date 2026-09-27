@@ -1,10 +1,6 @@
 import { Router } from 'express';
 import { validate } from '../middlewares/validate';
-import {
-  createFeedbackSchema,
-  feedbackIdParamSchema,
-  listFeedbacksQuerySchema,
-} from '../schemas/feedback.schema';
+import { createFeedbackSchema, feedbackIdParamSchema, listFeedbacksQuerySchema } from '../schemas/feedback.schema';
 import * as controller from '../controllers/feedback.controller';
 
 export const feedbackRouter = Router();

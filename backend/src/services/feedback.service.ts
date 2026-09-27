@@ -17,7 +17,7 @@ export async function listFeedbacks(query: ListFeedbacksQuery): Promise<{
   const { page, limit, status, sentiment, urgency, category } = query;
   const where = {
     status,
-    analysis: sentiment ?? urgency ?? category ? { is: { sentiment, urgency, category } } : undefined,
+    analysis: (sentiment ?? urgency ?? category) ? { is: { sentiment, urgency, category } } : undefined,
   };
   const [total, rows] = await Promise.all([
     prisma.feedback.count({ where }),

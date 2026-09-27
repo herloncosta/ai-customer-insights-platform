@@ -2,9 +2,19 @@
   "name": "ai-customer-insights-platform",
   "version": "0.1.0",
   "private": true,
-  "workspaces": ["backend", "worker", "shared"],
+  "workspaces": [
+    "backend",
+    "worker",
+    "shared"
+  ],
   "scripts": {
     "generate": "npm run generate --workspace shared",
     "build": "npm run build --workspace shared && npm run build --workspace backend && npm run build --workspace worker"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.11.0",
+    "prettier": "^3.9.9",
+    "typescript-eslint": "^8.70.1"
   }
 }
