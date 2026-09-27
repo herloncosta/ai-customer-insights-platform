@@ -85,6 +85,7 @@ describe('output schemas (contratos §4)', () => {
       bySentiment: { POSITIVE: 80, NEUTRAL: 30, NEGATIVE: 40 },
       byUrgency: { LOW: 50, MEDIUM: 60, HIGH: 30, CRITICAL: 10 },
       topTags: [{ tag: 'erro 500', count: 12 }],
+      byDay: Array.from({ length: 14 }, (_, i) => ({ date: `2026-09-${String(i + 1).padStart(2, '0')}`, total: i })),
     };
     expect(() => metricsSchema.parse(base)).not.toThrow();
     const { topTags: _omitted, ...withoutTags } = base;

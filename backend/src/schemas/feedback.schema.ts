@@ -120,6 +120,14 @@ export const metricsSchema = z.object({
       count: z.number().int().min(1),
     }),
   ),
+  byDay: z
+    .array(
+      z.object({
+        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        total: z.number().int().min(0),
+      }),
+    )
+    .length(14),
 });
 
 export type MetricsDto = z.infer<typeof metricsSchema>;

@@ -1,14 +1,22 @@
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { Metrics } from '../lib/api';
+import { useTheme } from '../hooks/useTheme';
 import StatCard from './StatCard';
 
 const card = 'rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900';
 const title = 'mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400';
 
 export default function MetricsDashboard({ metrics }: { metrics: Metrics | null }) {
+  const { theme } = useTheme();
   if (!metrics) return null;
   const analyzed = metrics.bySentiment.POSITIVE + metrics.bySentiment.NEUTRAL + metrics.bySentiment.NEGATIVE;
   const pending = Math.max(0, metrics.total - analyzed);
   const critical = metrics.byUrgency.HIGH + metrics.byUrgency.CRITICAL;
+  const dark = theme === 'dark';
+  const axis = dark ? '#9ca3af' : '#6b7280';
+  const grid = dark ? '#1f2937' : '#e5e7eb';
+  const days = metrics.byDay.map((d) => ({ ...d, label: d.date.slice(5).split('-').reverse().join('/') }));
+  const maxDay = Math.max(1, ...metrics.byDay.map((d) => d.total));
   const maxTag = Math.max(1, ...metrics.topTags.map((t) => t.count));
 
   return (
@@ -69,6 +77,34 @@ export default function MetricsDashboard({ metrics }: { metrics: Metrics | null 
               <strong className="w-6 text-right text-gray-900 dark:text-white">{t.count}</strong>
             </div>
           ))}
+        </div>
+      </div>
+      <div className="mt-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <div className="mb-1 flex items-baseline justify-between">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            Feedbacks por dia · 14 dias
+          </h3>
+          <p className="text-xs text-gray-400 dark:text-gray-500">pico: {maxDay}/dia</p>
+        </div>
+        <div className="h-56">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={days} margin={{ top: 8, right: 8, bottom: 0, left: -18 }}>
+              <CartesianGrid stroke={grid} strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="label" tick={{ fill: axis, fontSize: 11 }} tickLine={false} axisLine={{ stroke: grid }} interval={2} />
+              <YAxis tick={{ fill: axis, fontSize: 11 }} tickLine={false} axisLine={false} allowDecimals={false} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: dark ? '#111827' : '#ffffff',
+                  border: `1px solid ${grid}`,
+                  borderRadius: 8,
+                  fontSize: 12,
+                }}
+                labelFormatter={(_, payload) => payload?.[0]?.payload?.date?.split('-').reverse().join('/') ?? ''}
+                formatter={(v) => [`${v} feedbacks`, 'Volume']}
+              />
+              <Area type="monotone" dataKey="total" stroke="#6366f1" strokeWidth={2} fill="#6366f1" fillOpacity={dark ? 0.35 : 0.15} />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </section>

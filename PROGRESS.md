@@ -38,7 +38,7 @@
 - [x] **E2e real com OpenRouter:** `OPENAI_BASE_URL` no analyzer + compose + `.env.examples`; pipeline POST → `PROCESSED` com análise real (`NEGATIVE/HIGH/BUG`, resumo PT-BR) + redelivery sem duplicar + DLQ; `ANALYZER_PROVIDER=mock` segue para e2e sem cota
 - [x] **RNF-06 validado:** `docker compose up --build` completo (mysql, rabbitmq, backend, worker, frontend) + `migrate:deploy` no boot do backend (stack sobe do zero); e2e POST → IA real → `PROCESSED` + frontend nginx 200
 - [x] **Acesso LAN:** `CORS_ORIGIN` + `VITE_API_URL` no `.env` local apontando para o IP da máquina (`192.168.88.253`); `VITE_API_URL` é build-arg (rebuild do frontend ao trocar); CORS validado com `Origin` da LAN
-5. ~~Frontend (RF-06)~~ ✅ feito + redesign UX + 3 telas por hash + sidebar esquerda (desktop, topbar no mobile) + dark mode com toggle persistido (`useTheme`, `@custom-variant`, anti-flash no `index.html`) + react-select nos filtros
+5. ~~Frontend (RF-06)~~ ✅ feito + redesign UX + 3 telas por hash + sidebar esquerda (desktop, topbar no mobile) + dark mode com toggle persistido (`useTheme`, `@custom-variant`, anti-flash no `index.html`) + react-select nos filtros + gráfico de volume 14 dias (recharts `AreaChart`, `byDay` no `/metrics` com 14 entradas garantidas via Zod)
 6. Testes de integração + cobertura ≥80% (RNF-04); criar configs ESLint/Prettier (o script `lint` existe, os arquivos de config ainda não)
 7. Seed de desenvolvimento (`prisma db seed`)
 

@@ -34,6 +34,7 @@ export interface Metrics {
   bySentiment: Record<Sentiment, number>;
   byUrgency: Record<Urgency, number>;
   topTags: { tag: string; count: number }[];
+  byDay: { date: string; total: number }[];
 }
 
 export interface Filters {
