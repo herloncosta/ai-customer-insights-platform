@@ -41,20 +41,36 @@ export async function getMetrics(): Promise<{
   bySentiment: { POSITIVE: number; NEUTRAL: number; NEGATIVE: number };
   byUrgency: { LOW: number; MEDIUM: number; HIGH: number; CRITICAL: number };
   topTags: { tag: string; count: number }[];
+  byDay: { date: string; total: number }[];
 }> {
-  const [total, bySentiment, byUrgency, tagRows] = await Promise.all([
+  const since = new Date();
+  since.setUTCDate(since.getUTCDate() - 13);
+  since.setUTCHours(0, 0, 0, 0);
+  const [total, bySentiment, byUrgency, tagRows, recent] = await Promise.all([
     prisma.feedback.count(),
     prisma.analysis.groupBy({ by: ['sentiment'], _count: true }),
     prisma.analysis.groupBy({ by: ['urgency'], _count: true }),
     prisma.analysis.findMany({ select: { tags: true } }),
+    prisma.feedback.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }),
   ]);
-  // ponytail: contagem de tags em JS (O(n)); migrar para SQL JSON_TABLE se o volume importar
+  // ponytail: agregações em JS (O(n)); migrar para SQL (JSON_TABLE / GROUP BY DATE) se o volume importar
   const tagCounts = new Map<string, number>();
   for (const { tags } of tagRows) {
     for (const tag of Array.isArray(tags) ? (tags as string[]) : []) {
       tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
     }
   }
+  const dayCounts = new Map<string, number>();
+  for (const { createdAt } of recent) {
+    const day = createdAt.toISOString().slice(0, 10);
+    dayCounts.set(day, (dayCounts.get(day) ?? 0) + 1);
+  }
+  const byDay = Array.from({ length: 14 }, (_, i) => {
+    const d = new Date(since);
+    d.setUTCDate(since.getUTCDate() + i);
+    const date = d.toISOString().slice(0, 10);
+    return { date, total: dayCounts.get(date) ?? 0 };
+  });
   const sentiment = { POSITIVE: 0, NEUTRAL: 0, NEGATIVE: 0 };
   for (const g of bySentiment) sentiment[g.sentiment] = g._count;
   const urgency = { LOW: 0, MEDIUM: 0, HIGH: 0, CRITICAL: 0 };
@@ -67,5 +83,6 @@ export async function getMetrics(): Promise<{
       .map(([tag, count]) => ({ tag, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10),
+    byDay,
   };
 }
